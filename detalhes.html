@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>ValorNaPista | Detalhes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Detalhes do Modelo</h1>
+    <p>Informações reais com base na Tabela FIPE</p>
+  </header>
+
+  <nav>
+    <div class="nav-links">
+      <a href="index.html">Início</a>
+      <a href="modelos.html">Modelos</a>
+      <a href="favoritos.html">Favoritos</a>
+      <a href="historico.html">Histórico</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div id="anos" class="carro"></div>
+    <div id="detalhes" class="carro"></div>
+  </main>
+
+  <footer>
+    <p>© 2025 - ValorNaPista</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const codigoMarca = params.get("marca");
+    const codigoModelo = params.get("modelo");
+    const nomeModelo = params.get("nome");
+
+    const anosDiv = document.getElementById("anos");
+    const detalhesDiv = document.getElementById("detalhes");
+
+    async function carregarAnos() {
+      if (!codigoMarca || !codigoModelo) {
+        anosDiv.innerHTML = "<p class='error'>Dados incompletos na URL.</p>";
+        return;
+      }
+
+      try {
+        anosDiv.innerHTML = "<p class='loading'>🔄 Carregando anos disponíveis...</p>";
+
+        const res = await fetch(`https://parallelum.com.br/fipe/api/v1/carros/marcas/${codigoMarca}/modelos/${codigoModelo}/anos`);
+        const anos = await res.json();
+
+        anosDiv.innerHTML = `
+          <h2>Anos disponíveis para: ${nomeModelo}</h2>
+          <ul>
+            ${anos.map(ano => `
+              <li>
+                <button onclick="carregarDetalhes('${codigoMarca}', '${codigoModelo}', '${ano.codigo}')">${ano.nome}</button>
+              </li>
+            `).join("")}
+          </ul>
+        `;
+      } catch (e) {
+        anosDiv.innerHTML = "<p class='error'>Erro ao carregar anos.</p>";
+        console.error(e);
+      }
+    }
+
+    async function carregarDetalhes(marca, modelo, ano) {
+      try {
+        detalhesDiv.innerHTML = "<p class='loading'>🔍 Buscando detalhes...</p>";
+
+        const res = await fetch(`https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos/${modelo}/anos/${ano}`);
+        const data = await res.json();
+
+        detalhesDiv.innerHTML = `
+          <h3>${data.modelo} (${data.anoModelo})</h3>
+          <p><strong>Marca:</strong> ${data.marca}</p>
+          <p><strong>Combustível:</strong> ${data.combustivel}</p>
+          <p><strong>Valor:</strong> ${data.valor}</p>
+          <p><strong>Referência:</strong> ${data.mesReferencia}</p>
+        `;
+
+        salvarHistorico(data);
+      } catch (e) {
+        detalhesDiv.innerHTML = "<p class='error'>Erro ao buscar detalhes.</p>";
+        console.error(e);
+      }
+    }
+
+    function salvarHistorico(dados) {
+      let historico = JSON.parse(localStorage.getItem('historicoFIPE')) || [];
+      historico.unshift({
+        modelo: dados.modelo,
+        valor: dados.valor,
+        referencia: dados.mesReferencia
+      });
+      historico = historico.slice(0, 5); // limita a 5 últimos
+      localStorage.setItem('historicoFIPE', JSON.stringify(historico));
+    }
+
+    carregarAnos();
+  </script>
+
+</body>
+</html>

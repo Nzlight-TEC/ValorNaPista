@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>ValorNaPista | Favoritos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<script>
+  function carregarFavoritos() {
+    const lista = document.getElementById("listaFavoritos");
+    if (!lista) return;
+  
+    let favoritos = JSON.parse(localStorage.getItem("favoritosModelos")) || [];
+  
+    if (favoritos.length === 0) {
+      lista.innerHTML = "<li>❌ Nenhum modelo favorito ainda.</li>";
+      return;
+    }
+  
+    lista.innerHTML = favoritos.map(modelo => `<li>${modelo}</li>`).join("");
+  }
+  
+  function limparFavoritos() {
+    localStorage.removeItem("favoritosModelos");
+    carregarFavoritos();
+  }
+  </script>
+  
+<body onload="carregarFavoritos()">
+
+<header>
+  <h1>Favoritos</h1>
+  <p>Modelos que você salvou para consulta rápida</p>
+</header>
+
+<nav>
+  <div class="nav-links">
+    <a href="index.html">Início</a>
+    <a href="favoritos.html">Favoritos</a>
+    <a href="historico.html">Histórico</a>
+  </div>
+</nav>
+
+<main class="container">
+  <button onclick="limparFavoritos()" class="btn-danger">Limpar todos favoritos</button>
+  <ul id="listaFavoritos" class="carro"></ul>
+</main>
+
+<footer>
+  <p>© 2025 - ValorNaPista</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>

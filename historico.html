@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>ValorNaPista | Histórico</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Histórico de Marcas Pesquisadas</h1>
+  <p>Últimas marcas pesquisadas na base NHTSA</p>
+</header>
+
+<nav>
+  <div class="nav-links">
+    <a href="index.html">Início</a>
+    <a href="favoritos.html">Favoritos</a>
+    <a href="historico.html">Histórico</a>
+  </div>
+</nav>
+
+<main class="container">
+  <button onclick="limparHistorico()" class="btn-danger">Limpar histórico</button>
+
+  <h2>🔍 Histórico de Marcas Pesquisadas (NHTSA)</h2>
+  <ul id="listaHistoricoNHTSA" class="carro"></ul>
+
+  <h2>📊 Histórico de Modelos Consultados (FIPE)</h2>
+  <ul id="listaHistoricoFIPE" class="carro"></ul>
+</main>
+
+<footer>
+  <p>© 2025 - ValorNaPista</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
+<script>function carregarHistorico() {
+  const lista = document.getElementById("listaHistorico");
+  let historico = JSON.parse(localStorage.getItem("historicoNHTSA")) || [];
+
+  if (historico.length === 0) {
+    lista.innerHTML = "<li>❌ Nenhuma marca pesquisada ainda.</li>";
+    return;
+  }
+
+  lista.innerHTML = historico.map(item => `<li>${item}</li>`).join("");
+}
+
+function limparHistorico() {
+  localStorage.removeItem("historicoNHTSA");
+  carregarHistorico();
+}
+
+// Carrega o histórico ao abrir a página
+if (document.getElementById("listaHistorico")) {
+  window.onload = carregarHistorico;
+}
+
+</script>

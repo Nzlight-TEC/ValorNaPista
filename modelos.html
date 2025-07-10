@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>ValorNaPista | Modelos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Modelos por Marca (FIPE)</h1>
+    <p>Busque os modelos disponíveis na base da Tabela FIPE</p>
+  </header>
+
+  <nav>
+    <div class="search-bar">
+      <input type="text" id="campoMarca" placeholder="Digite a marca (ex: Fiat)">
+      <button onclick="buscarModelos()">Carregar Modelos</button>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Início</a>
+      <a href="modelos.html">Modelos</a>
+      <a href="favoritos.html">Favoritos</a>
+      <a href="historico.html">Histórico</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div id="resultado" class="carro"></div>
+  </main>
+
+  <footer>
+    <p>© 2025 - ValorNaPista</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    let marcasFIPE = [];
+
+    // Busca todas as marcas da FIPE quando a página carrega
+    window.onload = async () => {
+      try {
+        const res = await fetch("https://parallelum.com.br/fipe/api/v1/carros/marcas");
+        marcasFIPE = await res.json();
+      } catch (e) {
+        document.getElementById("resultado").innerHTML = "<p class='error'>Erro ao carregar marcas da FIPE</p>";
+        console.error(e);
+      }
+    }
+
+    // Busca os modelos da marca digitada
+    async function buscarModelos() {
+      const nomeMarca = document.getElementById("campoMarca").value.trim().toLowerCase();
+      const resultadoDiv = document.getElementById("resultado");
+
+      if (!nomeMarca) {
+        resultadoDiv.innerHTML = "<p class='error'>Digite uma marca válida.</p>";
+        return;
+      }
+
+      const marca = marcasFIPE.find(m => m.nome.toLowerCase() === nomeMarca);
+
+      if (!marca) {
+        resultadoDiv.innerHTML = "<p class='error'>Marca não encontrada na base da FIPE.</p>";
+        return;
+      }
+
+      resultadoDiv.innerHTML = "<p class='loading'>🔄 Buscando modelos...</p>";
+
+      try {
+        const res = await fetch(`https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca.codigo}/modelos`);
+        const dados = await res.json();
+
+        resultadoDiv.innerHTML = `
+          <h2>Modelos da marca: ${marca.nome}</h2>
+          <ul>
+            ${dados.modelos.map(modelo => `
+              <li>
+                <strong>${modelo.nome}</strong>
+                <button onclick="verDetalhes('${marca.codigo}', '${modelo.codigo}', '${modelo.nome}')">Ver Detalhes</button>
+                <button onclick="favoritarModelo('${modelo.nome}', 'add')">⭐ Favoritar</button>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      } catch (erro) {
+        resultadoDiv.innerHTML = "<p class='error'>Erro ao buscar modelos.</p>";
+        console.error(erro);
+      }
+    }
+
+    // Redireciona para a página de detalhes com os dados via query
+    function verDetalhes(codigoMarca, codigoModelo, nomeModelo) {
+      const url = `detalhes.html?marca=${codigoMarca}&modelo=${codigoModelo}&nome=${encodeURIComponent(nomeModelo)}`;
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
